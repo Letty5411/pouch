@@ -64,11 +64,11 @@ vet: # run go vet
 .PHONY: unit-test
 unit-test: pre ## run go test
 	@echo $@
-	@for test in `go list ./... | grep -v 'github.com/alibaba/pouch/test' | grep -v 'github.com/alibaba/pouch/extra'`; \
-	    do \
-	        go test -coverprofile=profile.out -covermode=atomic ${test} ; \
-	        [ -f profile.out] && cat profile.out >> coverage.txt && rm profile.out ; \
-	    done
+	@for d in $$(go list ./... | grep -v 'github.com/alibaba/pouch/test' | grep -v 'github.com/alibaba/pouch/extra'); \
+    	   do \
+        	    go test -coverprofile=profile.out -covermode=atomic $${d} ; \
+    	        cat profile.out >> coverage.txt >/dev/null 2>&1 && rm profile.out >/dev/null 2>&1; \
+    	    done
 	@
 
 .PHONY: validate-swagger
