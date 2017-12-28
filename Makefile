@@ -66,7 +66,7 @@ unit-test: pre ## run go test
 	@echo $@
 	@for test in `go list ./... | grep -v 'github.com/alibaba/pouch/test' | grep -v 'github.com/alibaba/pouch/extra'`; \
 	    do \
-	        go test -coverprofile=profile.out -covermode=atomic $test ; \
+	        go test -coverprofile=profile.out -covermode=atomic ${test} ; \
 	        [ -f profile.out] && cat profile.out >> coverage.txt && rm profile.out ; \
 	    done
 	@
