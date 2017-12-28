@@ -5,6 +5,7 @@ import (
 	"github.com/alibaba/pouch/test/request"
 
 	"github.com/go-check/check"
+	"net/url"
 )
 
 // APIImageDeleteSuite is the test suite for image delete API.
@@ -26,3 +27,21 @@ func (suite *APIImageDeleteSuite) TestDeleteNonExisting(c *check.C) {
 	c.Assert(err, check.IsNil)
 	c.Assert(resp.StatusCode, check.Equals, 404)
 }
+
+// TestDeleteUsingImage tests deleting an image in use by running container will fail.
+func (suite *APIImageDeleteSuite) TestDeleteUsingImage(c *check.C) {
+	cname := "TestDeleteUsingImage"
+	CreateBusyboxContainerOk(c, cname)
+	StopContainerOk(c, cname)
+
+	q := url.Values{}
+	q.Add("fromImage", busyboxImage)
+	q.Add("tag", "latest")
+
+	resp, err := request.Delete("/images/" + helloworldImage)
+	c.Assert(err, check.IsNil)
+	c.Assert(resp.StatusCode, check.Equals, 409)
+
+	DelContainerForceOk(c, cname)
+}
+
