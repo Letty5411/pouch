@@ -29,29 +29,6 @@ func SkipIfFalse(c *check.C, conditions ...VerifyCondition) {
 	}
 }
 
-type WaitCondition func(...interface{}) bool
-
-// WaitUntil waits timeout until condition is satisfied or failed.
-func WaitUntil(c *check.C, timeout time.Duration, conditions ...WaitCondition) {
-	for _, con := range conditions {
-		after := time.After(timeout)
-		for {
-			if con() == false {
-				select {
-				case <-after:
-					c.FailNow()
-				default:
-					time.Sleep(10 * time.Millisecond)
-					continue
-				}
-			} else {
-				break
-			}
-
-		}
-	}
-}
-
 // CreateBusyboxContainerOk creates a busybox container and asserts success.
 func CreateBusyboxContainerOk(c *check.C, cname string, cmd ...string) {
 	// If not specified, CMD executed in container is "top".
@@ -184,13 +161,28 @@ func isContainerStateEqual(c *check.C, cname string, status string) (bool, error
 	return string(got.State.Status) == status, nil
 }
 
-func IsImageExists(img string) bool {
-	resp, err := request.Get(img)
-	if err != nil {
-		return false
+// WaitUntilImageExists
+func WaitUntilImageExists(c *check.C, timeout time.Duration, args ...string) (bool, error){
+	for _, arg := range args {
+		for {
+			after := time.After(timeout)
+			resp, err := request.Get(arg)
+			if err != nil {
+return false,err
+}
+			if resp.StatusCode != 200 {
+				select {
+				case <-after:
+return false, nil
+				default:
+					time.Sleep(10 * time.Millisecond)
+					continue
+				}
+			} else {
+				break
+			}
+
+		}
 	}
-	if resp.StatusCode != 200 {
-		return false
-	}
-	return true
+return true, nil
 }

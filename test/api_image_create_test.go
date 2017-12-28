@@ -32,7 +32,9 @@ func (suite *APIImageCreateSuite) TestImageCreateOk(c *check.C) {
 	c.Assert(resp.StatusCode, check.Equals, 200)
 
 	url := "/images/" + helloworldImage + ":latest" + "/json"
-	WaitUntil(c, 10, IsImageExists(url))
+	ok, err := WaitUntilImageExists(c, 10, url)
+	c.Assert(err, check.IsNil)
+	c.Assert(ok, check.Equals, true)
 
 	resp, err = request.Delete("/images/" + helloworldImage + ":latest")
 	c.Assert(err, check.IsNil)
