@@ -22,8 +22,7 @@ func (suite *APIImageListSuite) SetUpTest(c *check.C) {
 
 // TestImageListOk tests listing images is OK.
 func (suite *APIImageListSuite) TestImageListOk(c *check.C) {
-	path := "/images/json"
-	resp, err := request.Get(path)
+	resp, err := request.Get("/images/json")
 	c.Assert(err, check.IsNil)
 	c.Assert(resp.StatusCode, check.Equals, 200)
 }
@@ -34,8 +33,7 @@ func (suite *APIImageListSuite) TestImageListAll(c *check.C) {
 	q.Add("all", "true")
 	query := request.WithQuery(q)
 
-	path := "/images/json"
-	resp, err := request.Get(path, query)
+	resp, err := request.Get("/images/json", query)
 	c.Assert(err, check.IsNil)
 	c.Assert(resp.StatusCode, check.Equals, 200)
 
@@ -48,21 +46,12 @@ func (suite *APIImageListSuite) TestImageListDigest(c *check.C) {
 	q.Add("digests", "true")
 	query := request.WithQuery(q)
 
-	path := "/images/json"
-	resp, err := request.Get(path, query)
+	resp, err := request.Get("/images/json", query)
 	c.Assert(err, check.IsNil)
 	c.Assert(resp.StatusCode, check.Equals, 200)
 }
 
 // TestImageListFilter tests listing images with filter.
 func (suite *APIImageListSuite) TestImageListFilter(c *check.C) {
-	q := url.Values{}
-	q.Add("filters", busyboxImage)
-	query := request.WithQuery(q)
-
-	path := "/images/json"
-	resp, err := request.Get(path, query)
-	c.Assert(err, check.IsNil)
-	c.Assert(resp.StatusCode, check.Equals, 200)
+	// TODO
 }
-

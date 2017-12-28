@@ -12,7 +12,7 @@ import (
 
 // const defines common image name
 const (
-	busyboxImage = "registry.hub.docker.com/library/busybox"
+	busyboxImage    = "registry.hub.docker.com/library/busybox:latest"
 	helloworldImage = "registry.hub.docker.com/library/hello-world"
 )
 
@@ -24,6 +24,29 @@ func SkipIfFalse(c *check.C, conditions ...VerifyCondition) {
 	for _, con := range conditions {
 		if con() == false {
 			c.Skip("Skip test as condition is not matched")
+		}
+	}
+}
+
+type WaitCondition func(...interface{}) bool
+
+// WaitUntil waits timeout until condition is satisfied or failed.
+func WaitUntil(c *check.C, timeout time.Duration, conditions ...WaitCondition) {
+	for _, con := range conditions {
+		after := time.After(timeout)
+		for {
+			if con() == false {
+				select {
+				case <-after:
+					c.Failnow()
+				default:
+					time.Sleep(10 * time.Millisecond)
+					continue
+				}
+			} else {
+				break
+			}
+
 		}
 	}
 }
@@ -158,4 +181,15 @@ func isContainerStateEqual(c *check.C, cname string, status string) (bool, error
 	}
 
 	return string(got.State.Status) == status, nil
+}
+
+func IsImageExists(img string) bool {
+	resp, err := request.Get(img)
+	if err != nil {
+		return false
+	}
+	if resp.StatusCode != 200 {
+		return false
+	}
+	return true
 }

@@ -62,7 +62,7 @@ func (suite *APIContainerInspectSuite) TestInspectPid(c *check.C) {
 
 	CreateBusyboxContainerOk(c, cname)
 
-	StopContainerOk(c, cname)
+	StartContainerOk(c, cname)
 
 	resp, err := request.Get("/containers/" + cname + "/json")
 	c.Assert(err, check.IsNil)
@@ -76,5 +76,3 @@ func (suite *APIContainerInspectSuite) TestInspectPid(c *check.C) {
 
 	DelContainerForceOk(c, cname)
 }
-
-

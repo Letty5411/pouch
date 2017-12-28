@@ -32,16 +32,15 @@ func (suite *APIImageDeleteSuite) TestDeleteNonExisting(c *check.C) {
 func (suite *APIImageDeleteSuite) TestDeleteUsingImage(c *check.C) {
 	cname := "TestDeleteUsingImage"
 	CreateBusyboxContainerOk(c, cname)
-	StopContainerOk(c, cname)
+	StartContainerOk(c, cname)
 
 	q := url.Values{}
-	q.Add("fromImage", busyboxImage)
+	q.Add("fromImage", helloworldImage)
 	q.Add("tag", "latest")
 
-	resp, err := request.Delete("/images/" + helloworldImage)
+	resp, err := request.Delete("/images/" + helloworldImage + ":latest")
 	c.Assert(err, check.IsNil)
-	c.Assert(resp.StatusCode, check.Equals, 409)
+	c.Assert(resp.StatusCode, check.Equals, 500)
 
 	DelContainerForceOk(c, cname)
 }
-

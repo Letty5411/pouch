@@ -26,13 +26,15 @@ func (suite *APIImageCreateSuite) TestImageCreateOk(c *check.C) {
 	q := url.Values{}
 	q.Add("fromImage", helloworldImage)
 	q.Add("tag", "latest")
-	path := "/images/create"
 	query := request.WithQuery(q)
-	resp, err := request.Post(path, query)
+	resp, err := request.Post("/images/create", query)
 	c.Assert(err, check.IsNil)
 	c.Assert(resp.StatusCode, check.Equals, 200)
 
-	resp, err = request.Delete("/images/" + helloworldImage)
+	url := "/images/" + helloworldImage + ":latest" + "/json"
+	WaitUntil(c, 10, IsImageExists(url))
+
+	resp, err = request.Delete("/images/" + helloworldImage + ":latest")
 	c.Assert(err, check.IsNil)
 	c.Assert(resp.StatusCode, check.Equals, 204)
 }
@@ -42,10 +44,9 @@ func (suite *APIImageCreateSuite) TestImageCreateNil(c *check.C) {
 	q := url.Values{}
 	q.Add("fromImage", "")
 
-	path := "/images/create"
 	query := request.WithQuery(q)
 
-	resp, err := request.Post(path, query)
+	resp, err := request.Post("/images/create", query)
 	c.Assert(err, check.IsNil)
 	c.Assert(resp.StatusCode, check.Equals, 400)
 }
@@ -54,14 +55,12 @@ func (suite *APIImageCreateSuite) TestImageCreateNil(c *check.C) {
 func (suite *APIImageCreateSuite) TestImageCreateWithoutTag(c *check.C) {
 	q := url.Values{}
 	q.Add("fromImage", helloworldImage)
-	path := "/images/create"
 	query := request.WithQuery(q)
-	resp, err := request.Post(path, query)
+	resp, err := request.Post("/images/create", query)
 	c.Assert(err, check.IsNil)
 	c.Assert(resp.StatusCode, check.Equals, 200)
 
-	resp, err = request.Delete("/images/" + helloworldImage)
+	resp, err = request.Delete("/images/" + helloworldImage + ":latest")
 	c.Assert(err, check.IsNil)
 	c.Assert(resp.StatusCode, check.Equals, 204)
 }
-
