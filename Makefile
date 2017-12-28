@@ -64,7 +64,12 @@ vet: # run go vet
 .PHONY: unit-test
 unit-test: pre ## run go test
 	@echo $@
-	@go test `go list ./... | grep -v 'github.com/alibaba/pouch/test' | grep -v 'github.com/alibaba/pouch/extra'`
+	@for d in $$(go list ./... | grep -v 'github.com/alibaba/pouch/test' | grep -v 'github.com/alibaba/pouch/extra'); \
+    	   do \
+        	    go test -coverprofile=profile.out -covermode=atomic $${d} ; \
+    	        cat profile.out >> coverage.txt >/dev/null 2>&1 && rm profile.out >/dev/null 2>&1; \
+    	    done
+	@
 
 .PHONY: validate-swagger
 validate-swagger: ## run swagger validate
@@ -93,13 +98,3 @@ uninstall:
 	@echo $@
 	@rm -f $(addprefix $(DESTDIR)/bin/,$(notdir $(BINARY_NAME)))
 	@rm -f $(addprefix $(DESTDIR)/bin/,$(notdir $(CLI_BINARY_NAME)))
-
-# For integration-test and test, PATH is not set under sudo, then we set up path mannually.
-# Ref https://unix.stackexchange.com/questions/83191/how-to-make-sudo-preserve-path
-.PHONY: integration-test
-integration-test:
-	@bash -c "env PATH=$(PATH) hack/make.sh check build integration-test"
-
-.PHONY: test
-test:
-	@bash -c "env PATH=$(PATH) hack/make.sh check build unit-test integration-test"
