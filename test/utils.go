@@ -3,6 +3,7 @@ package main
 import (
 	"net/http"
 	"net/url"
+	"time"
 
 	"github.com/alibaba/pouch/apis/types"
 	"github.com/alibaba/pouch/test/request"
@@ -38,7 +39,7 @@ func WaitUntil(c *check.C, timeout time.Duration, conditions ...WaitCondition) {
 			if con() == false {
 				select {
 				case <-after:
-					c.Failnow()
+					c.FailNow()
 				default:
 					time.Sleep(10 * time.Millisecond)
 					continue
