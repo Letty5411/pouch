@@ -7,10 +7,15 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"net"
+	"bufio"
+	"net/http/httputil"
+	"time"
 
 	"github.com/alibaba/pouch/client"
 	"github.com/alibaba/pouch/pkg/utils"
 	"github.com/alibaba/pouch/test/environment"
+
 )
 
 // Option defines a type used to update http.Request.
@@ -128,3 +133,30 @@ func newRequest(method, url string, opts ...Option) (*http.Request, error) {
 
 	return req, nil
 }
+
+//func Hijack(endpoint string, opts ...Option) (net.Conn, *bufio.Reader, error) {
+//	req, err := newRequest(http.MethodPost, environment.PouchdAddress+endpoint, opts...)
+//	if err != nil {
+//		return nil,nil, err
+//	}
+//	req.Header.Set("Connection", "Upgrade")
+//	req.Header.Set("Upgrade", "tcp")
+//
+//	req.Host = environment.PouchdAddress
+//	defaultTimeout := time.Second * 10
+//	conn, err := net.DialTimeout("unix", environment.PouchdAddress, defaultTimeout)
+//	if err != nil {
+//		return nil, nil, err
+//	}
+//
+//	clientconn := httputil.NewClientConn(conn, nil)
+//	defer clientconn.Close()
+//
+//	if _, err := clientconn.Do(req); err != nil {
+//		return nil, nil, err
+//	}
+//
+//	rwc, br := clientconn.Hijack()
+//
+//	return rwc, br, nil
+//}
