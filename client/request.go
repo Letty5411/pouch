@@ -49,6 +49,7 @@ func (client *APIClient) hijack(path string, query url.Values, obj interface{}, 
 		return nil, nil, err
 	}
 
+	// websocket client
 	req.Header.Set("Connection", "Upgrade")
 	req.Header.Set("Upgrade", "tcp")
 
