@@ -172,3 +172,38 @@ func DelNetworkOk(c *check.C, cname string) {
 func DelNetwork(c *check.C, cname string) (*http.Response, error) {
 	return request.Delete("/networks/" + cname)
 }
+
+// CreateExecEchoOk exec process's environment with "echo" CMD.
+func CreateExecEchoOk(c *check.C, cname string) string {
+	obj := map[string]interface{}{
+		"Cmd":    []string{"echo", "test"},
+		"Detach": true,
+	}
+	body := request.WithJSONBody(obj)
+
+	resp, err := request.Post("/containers/"+cname+"/exec", body)
+	c.Assert(err, check.IsNil)
+	CheckRespStatus(c, resp, 201)
+
+	var got types.ExecCreateResp
+	request.DecodeBody(&got, resp.Body)
+	return got.ID
+}
+
+// StartContainerExecOk starts executing a process in the container and asserts success.
+func StartContainerExecOk(c *check.C, execid string, tty bool, detach bool) {
+	resp, err := StartContainerExec(c, execid, tty, detach)
+	c.Assert(err, check.IsNil)
+	CheckRespStatus(c, resp, 200)
+}
+
+// StartContainerExec starts executing a process in the container.
+func StartContainerExec(c *check.C, execid string, tty bool, detach bool) (*http.Response, error) {
+	
+	obj := map[string]interface{}{
+		"Detach": detach,
+		"Tty":    tty,
+	}
+	body := request.WithJSONBody(obj)
+	return request.Post("/exec/"+execid+"/start", body, request.WithHeader("Content-Type","text/plain"))
+}
