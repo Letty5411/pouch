@@ -141,9 +141,9 @@ func Hijack(endpoint string, opts ...Option) (net.Conn, *bufio.Reader, error) {
 	req.Header.Set("Connection", "Upgrade")
 	req.Header.Set("Upgrade", "tcp")
 
-	req.Host = environment.PouchdAddress
+	req.Host = "/var/run/pouchd.sock"
 	defaultTimeout := time.Second * 10
-	conn, err := net.DialTimeout("unix", environment.PouchdAddress, defaultTimeout)
+	conn, err := net.DialTimeout("unix", req.Host, defaultTimeout)
 	if err != nil {
 		return nil, nil, err
 	}
