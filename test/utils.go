@@ -7,7 +7,9 @@ import (
 	"github.com/alibaba/pouch/apis/types"
 	"github.com/alibaba/pouch/test/request"
 
+	"bufio"
 	"github.com/go-check/check"
+	"net"
 )
 
 // const defines common image name
@@ -192,18 +194,20 @@ func CreateExecEchoOk(c *check.C, cname string) string {
 
 // StartContainerExecOk starts executing a process in the container and asserts success.
 func StartContainerExecOk(c *check.C, execid string, tty bool, detach bool) {
-	resp, err := StartContainerExec(c, execid, tty, detach)
+	conn, _, err := StartContainerExec(c, execid, tty, detach)
 	c.Assert(err, check.IsNil)
-	CheckRespStatus(c, resp, 200)
+	defer conn.Close()
 }
 
 // StartContainerExec starts executing a process in the container.
-func StartContainerExec(c *check.C, execid string, tty bool, detach bool) (*http.Response, error) {
-	
+func StartContainerExec(c *check.C, execid string, tty bool, detach bool) (net.Conn, *bufio.Reader, error) {
+
 	obj := map[string]interface{}{
 		"Detach": detach,
 		"Tty":    tty,
 	}
 	body := request.WithJSONBody(obj)
-	return request.Post("/exec/"+execid+"/start", body, request.WithHeader("Content-Type","text/plain"))
+
+	conn, reader, err := request.Hijack("/exec/"+execid+"/start", body, request.WithHeader("Content-Type", "text/plain"))
+	return conn, reader, err
 }
