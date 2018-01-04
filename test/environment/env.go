@@ -15,6 +15,9 @@ var (
 
 	// TLSConfig is default tls config
 	TLSConfig = utils.TLSConfig{}
+
+	// CRIListenSocket is the default listening address of CRI
+	CRIListenSocket = "/var/run/pouchcri.sock"
 )
 
 // IsLinux checks if the OS of test environment is Linux.

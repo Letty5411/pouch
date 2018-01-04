@@ -24,6 +24,19 @@ function install_pouch ()
 	chmod +x /usr/local/bin/runc.amd64
 	mv /usr/local/bin/runc.amd64 /usr/local/bin/runc
 
+	# install crictl
+	echo "Install crictl. "
+	env|sort
+    go get github.com/kubernetes-incubator/cri-tools/cmd/crictl
+    which crictl || echo "[Warning]: crictl tool doesn't exist!"
+    cat >/etc/crictl.yaml <<EOF
+runtime-endpoint: /var/run/pouchcri.sock
+image-endpoint: /var/run/pouchcri.sock
+timeout: 10
+debug: true
+EOF
+	cp $GOPATH/bin/crictl /usr/local/bin/
+
 	# copy pouch daemon and pouch cli to PATH
 	echo "Install pouch."
 	cp -f $DIR/pouch $DIR/pouchd /usr/local/bin/
