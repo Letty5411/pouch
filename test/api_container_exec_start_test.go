@@ -2,11 +2,15 @@ package main
 
 import (
 	"time"
+	"io"
+	"net"
+	"bufio"
 
 	"github.com/alibaba/pouch/test/environment"
 	"github.com/alibaba/pouch/test/request"
 
 	"github.com/go-check/check"
+
 )
 
 // APIContainerExecStartSuite is the test suite for container exec start API.
@@ -21,6 +25,15 @@ func (suite *APIContainerExecStartSuite) SetUpTest(c *check.C) {
 	SkipIfFalse(c, environment.IsLinux)
 }
 
+func checkEchoSuccess(c *check.C, conn net.Conn, br *bufio.Reader) {
+	defer conn.Close()
+
+	got := make([]byte, 1)
+	_, err := io.ReadFull(br, got)
+	c.Assert(err, check.IsNil)
+	c.Assert(got[:], check.DeepEquals, "test", check.Commentf("Expected test, got %s", got))
+}
+
 // TestContainerExecStartOk tests start exec is OK.
 func (suite *APIContainerExecStartSuite) TestContainerExecStartOk(c *check.C) {
 	cname := "TestContainerCreateExecStartOk"
@@ -32,7 +45,9 @@ func (suite *APIContainerExecStartSuite) TestContainerExecStartOk(c *check.C) {
 	got := CreateExecEchoOk(c, cname)
 	c.Logf("got=%s", got)
 
-	StartContainerExecOk(c, got, false, false)
+	conn, reader, err := StartContainerExec(c, got, false, false)
+	c.Assert(err, check.IsNil)
+	checkEchoSuccess(c, conn, reader)
 
 	DelContainerForceOk(c, cname)
 }

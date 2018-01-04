@@ -134,14 +134,15 @@ func newRequest(method, url string, opts ...Option) (*http.Request, error) {
 }
 
 func Hijack(endpoint string, opts ...Option) (net.Conn, *bufio.Reader, error) {
-	req, err := newRequest(http.MethodPost, environment.PouchdAddress+endpoint, opts...)
+	// Noneed to pass baseurl as it is a unix connect.
+	req, err := newRequest(http.MethodPost, endpoint, opts...)
 	if err != nil {
 		return nil, nil, err
 	}
 	req.Header.Set("Connection", "Upgrade")
 	req.Header.Set("Upgrade", "tcp")
 
-	req.Host = "/var/run/pouchd.sock"
+	req.Host = environment.PouchdUnixDomainSock
 	defaultTimeout := time.Second * 10
 	conn, err := net.DialTimeout("unix", req.Host, defaultTimeout)
 	if err != nil {
@@ -151,6 +152,7 @@ func Hijack(endpoint string, opts ...Option) (net.Conn, *bufio.Reader, error) {
 	clientconn := httputil.NewClientConn(conn, nil)
 	defer clientconn.Close()
 
+	// Ignore response here.
 	if _, err := clientconn.Do(req); err != nil {
 		return nil, nil, err
 	}

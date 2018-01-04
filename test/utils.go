@@ -177,9 +177,16 @@ func DelNetwork(c *check.C, cname string) (*http.Response, error) {
 
 // CreateExecEchoOk exec process's environment with "echo" CMD.
 func CreateExecEchoOk(c *check.C, cname string) string {
+	// NOTICE:
+	// All files in the obj is needed, or start a new process may hang.
 	obj := map[string]interface{}{
-		"Cmd":    []string{"echo", "test"},
-		"Detach": true,
+		"Cmd":          []string{"echo", "test"},
+		"Detach":       true,
+		"AttachStderr": true,
+		"AttachStdout": true,
+		"AttachStdin":  true,
+		"Privileged":   false,
+		"User":         "",
 	}
 	body := request.WithJSONBody(obj)
 
