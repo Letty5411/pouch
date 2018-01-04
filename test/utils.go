@@ -7,7 +7,9 @@ import (
 	"github.com/alibaba/pouch/apis/types"
 	"github.com/alibaba/pouch/test/request"
 
+	"bufio"
 	"github.com/go-check/check"
+	"net"
 )
 
 // const defines common image name
@@ -171,4 +173,48 @@ func DelNetworkOk(c *check.C, cname string) {
 // DelNetwork  deletes the network.
 func DelNetwork(c *check.C, cname string) (*http.Response, error) {
 	return request.Delete("/networks/" + cname)
+}
+
+// CreateExecEchoOk exec process's environment with "echo" CMD.
+func CreateExecEchoOk(c *check.C, cname string) string {
+	// NOTICE:
+	// All files in the obj is needed, or start a new process may hang.
+	obj := map[string]interface{}{
+		"Cmd":          []string{"echo", "test"},
+		"Detach":       true,
+		"AttachStderr": true,
+		"AttachStdout": true,
+		"AttachStdin":  true,
+		"Privileged":   false,
+		"User":         "",
+	}
+	body := request.WithJSONBody(obj)
+
+	resp, err := request.Post("/containers/"+cname+"/exec", body)
+	c.Assert(err, check.IsNil)
+	CheckRespStatus(c, resp, 201)
+
+	var got types.ExecCreateResp
+	request.DecodeBody(&got, resp.Body)
+	return got.ID
+}
+
+// StartContainerExecOk starts executing a process in the container and asserts success.
+func StartContainerExecOk(c *check.C, execid string, tty bool, detach bool) {
+	conn, _, err := StartContainerExec(c, execid, tty, detach)
+	c.Assert(err, check.IsNil)
+	defer conn.Close()
+}
+
+// StartContainerExec starts executing a process in the container.
+func StartContainerExec(c *check.C, execid string, tty bool, detach bool) (net.Conn, *bufio.Reader, error) {
+
+	obj := map[string]interface{}{
+		"Detach": detach,
+		"Tty":    tty,
+	}
+	body := request.WithJSONBody(obj)
+
+	conn, reader, err := request.Hijack("/exec/"+execid+"/start", body, request.WithHeader("Content-Type", "text/plain"))
+	return conn, reader, err
 }

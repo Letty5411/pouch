@@ -11,7 +11,8 @@ var (
 	PouchBinary = "/usr/local/bin/pouch"
 
 	// PouchdAddress is default pouchd address
-	PouchdAddress = "unix:///var/run/pouchd.sock"
+	PouchdAddress        = "unix:///var/run/pouchd.sock"
+	PouchdUnixDomainSock = "/var/run/pouchd.sock"
 
 	// TLSConfig is default tls config
 	TLSConfig = utils.TLSConfig{}
