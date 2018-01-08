@@ -29,6 +29,32 @@ function install_pouch ()
 	cp -f $DIR/pouch $DIR/pouchd /usr/local/bin/
 }
 
+function start_daemon
+{
+	pgrep pouchd && return 0
+
+	#start pouch daemon
+	echo "start pouch daemon"
+	pouchd > $TMP/log 2>&1 &
+
+	# wait until pouch daemon is ready
+	daemon_timeout_time=30
+	while true;
+	do
+		if [[ -S /var/run/pouchd.sock ]];then
+			echo "Succeed to start pouch daemon"
+			return 0
+		elif (( $((daemon_timeout_time--)) == 0 ));then
+			echo "Failed to start pouch daemon"
+			echo "pouch daemon log:"
+			cat $TMP/log 
+			return 1
+		else
+			sleep 1
+		fi
+	done
+}
+
 function target()
 {
 	case $1 in
@@ -42,6 +68,10 @@ function target()
 	unit-test)
 		docker run -ti -v $(pwd):$SOURCEDIR $IMAGE bash -c "make unit-test"
 		;;
+	cri-test)
+		start_daemon || return 1
+		#TODO: call cri-test
+		;;
 	integration-test)
 		docker run -ti -v $(pwd):$SOURCEDIR $IMAGE bash -c "cd test && go test -c -o integration-test"
 
@@ -52,26 +82,7 @@ function target()
 			ln -sf $DIR/ $SOURCEDIR
 		fi
 
-		#start pouch daemon
-		echo "start pouch daemon"
-		pouchd > $TMP/log 2>&1 &
-
-		# wait until pouch daemon is ready
-		daemon_timeout_time=30
-		while true;
-		do
-			if [[ -S /var/run/pouchd.sock ]];then
-				echo "Succeed to start pouch daemon"
-				break
-			elif (( $((daemon_timeout_time--)) == 0 ));then
-				echo "Failed to start pouch daemon"
-				echo "pouch daemon log:"
-				cat $TMP/log 
-				return 1
-			else
-				sleep 1
-			fi
-		done
+		start_daemon || return 1
 
 		pouch pull registry.hub.docker.com/library/busybox:latest >/dev/null
 
@@ -94,7 +105,7 @@ function main ()
 	docker build --quiet -t $IMAGE .
 
 	if [[ $# < 1 ]]; then
-		targets="check build unit-test integration-test"
+		targets="check build unit-test integration-test cri-test"
 	else
 		targets=($@)
 	fi
