@@ -108,6 +108,10 @@ func Post(endpoint string, opts ...Option) (*http.Response, error) {
 	if req.Header.Get("Content-Type") == "" {
 		WithHeader("Content-Type", "application/json")(req)
 	}
+	
+	//debug, err := ioutil.ReadAll(req.Body)
+	//fmt.Printf("%s",debug)
+
 	return apiClient.HTTPCli.Do(req)
 }
 
