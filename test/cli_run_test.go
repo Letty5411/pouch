@@ -380,7 +380,7 @@ func (suite *PouchRunSuite) TestRunWithLocalVolume(c *check.C) {
 	command.PouchRun("volume", "remove", funcname).Assert(c, icmd.Success)
 }
 
-// checkFileContent checks the content of fname contains expt
+// checkFileContians checks the content of fname contains expt
 func checkFileContians(c *check.C, fname string, expt string) {
 	cmdResult := icmd.RunCommand("cat", fname)
 	c.Assert(cmdResult.Error, check.IsNil)
@@ -443,7 +443,7 @@ func (suite *PouchRunSuite) TestRunWithMemoryswappiness(c *check.C) {
 	if err := json.Unmarshal([]byte(output), result); err != nil {
 		c.Errorf("failed to decode inspect output: %v", err)
 	}
-	c.Assert(*result.HostConfig.MemorySwappiness, check.Equals, int64(70))
+	c.Assert(int64(*result.HostConfig.MemorySwappiness), check.Equals, int64(70))
 
 	// test if cgroup has record the real value
 	containerID := result.ID
@@ -482,7 +482,7 @@ func (suite *PouchRunSuite) TestRunWithCPULimit(c *check.C) {
 		checkFileContians(c, path, "0")
 	}
 	{
-		path := fmt.Sprintf("/sys/fs/cgroup/cpuset/%s/cpu.shares", containerID)
+		path := fmt.Sprintf("/sys/fs/cgroup/cpu/%s/cpu.shares", containerID)
 		checkFileContians(c, path, "1000")
 	}
 
