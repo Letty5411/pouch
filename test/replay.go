@@ -15,11 +15,14 @@ import (
 	"github.com/alibaba/pouch/client"
 	"github.com/alibaba/pouch/test/request"
 	"github.com/alibaba/pouch/test/environment"
+	"github.com/gotestyourself/gotestyourself/icmd"
+
 )
 
 const (
 	LOGOUT  = "/tmp/log.out"
 	LOGERR 	= "/tmp/log.err"
+	//SRCFILE = "panic.txt"
 	SRCFILE = "create-raw.txt"
 )
 
@@ -104,12 +107,13 @@ func main() {
 		err = json.Unmarshal([]byte(inputString), &tmp)
 		if err != nil {
 			count_fail += 1
-			log_file(errWriter,"unmarshal",err,tmp,*tmp.HostConfig,*tmp.NetworkingConfig)
+			log_file(errWriter,"unmarshal",err)
+			//log_file(errWriter,"unmarshal",err,tmp,*tmp.HostConfig,*tmp.NetworkingConfig)
 			continue
 		}
 
 		// Replace use an exiting image
-		tmp.Image = "reg.docker.alibaba-inc.com/alidbpaas/db-alios7u2-alisql5.7-toolkit:latest"
+		//tmp.Image = "reg.docker.alibaba-inc.com/alidbpaas/db-alios7u2-alisql5.7-toolkit:latest"
 
 
 		b := bytes.NewBuffer([]byte{})
@@ -127,6 +131,7 @@ func main() {
 			var cname string
 			// TODO: pull image or replace image
 			{
+				icmd.RunCommand("pouch","pull",tmp.Image)	
 			}
 			{
 				fullPath := apiClient.BaseURL() + apiClient.GetAPIPath("/containers/create", url.Values{})
@@ -137,12 +142,18 @@ func main() {
 				//req.URL.RawQuery = q.Encode()
 
 				resp, err := apiClient.HTTPCli.Do(req)
+				if err != nil {
+					count_fail += 1
+					log_file(errWriter,"create",err)
+					continue
+				
+				}
 				got := types.ContainerCreateResp{}
 				request.DecodeBody(&got, resp.Body)
 
-				if err != nil || resp.StatusCode != 201 {
+				if resp.StatusCode != 201 {
 					count_fail += 1
-					log_file(errWriter,"create",err,resp,got)
+					log_file(errWriter,"create", err, resp,got)
 					continue
 				} else {
 					log_file(outWriter,"create",err,resp,got)
@@ -174,6 +185,8 @@ func main() {
 				} else {
 					log_file(outWriter,"delete",err,resp)
 				}
+			
+				icmd.RunCommand("pouch","rmi",tmp.Image)	
 				count_ok += 1
 			}//delete
 		}//switch
