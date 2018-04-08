@@ -22,8 +22,8 @@ import (
 const (
 	LOGOUT  = "/tmp/log.out"
 	LOGERR 	= "/tmp/log.err"
-	//SRCFILE = "panic.txt"
-	SRCFILE = "create-raw.txt"
+	SRCFILE = "panic.txt"
+	//SRCFILE = "create-raw.txt"
 )
 
 var logout *os.File
@@ -113,7 +113,7 @@ func main() {
 		}
 
 		// Replace use an exiting image
-		//tmp.Image = "reg.docker.alibaba-inc.com/alidbpaas/db-alios7u2-alisql5.7-toolkit:latest"
+		tmp.Image = "reg.docker.alibaba-inc.com/letty_ll/pouch-opensource:latest"
 
 
 		b := bytes.NewBuffer([]byte{})
@@ -144,7 +144,7 @@ func main() {
 				resp, err := apiClient.HTTPCli.Do(req)
 				if err != nil {
 					count_fail += 1
-					log_file(errWriter,"create",err)
+					log_file(errWriter,"create",err,tmp,*tmp.HostConfig,*tmp.NetworkingConfig)
 					continue
 				
 				}
