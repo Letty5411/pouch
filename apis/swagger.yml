@@ -2249,11 +2249,7 @@ definitions:
   Resources:
     description: "A container's resources (cgroups config, ulimits, etc)"
     type: "object"
-    required: [CPUShares, Memory, CgroupParent, BlkioWeight, CPUPeriod, CPUQuota, CpuRealtimePeriod, 
-    CpuRealtimeRuntime, CpusetCpus, CpusetMems, DeviceCgroupRules, KernelMemory, MemoryReservation, 
-    MemorySwap, MemorySwappiness, NanoCPUs, OomKillDisable, PidsLimit, CpuCount, CpuPercent, 
-    IOMaximumIOps, IOMaximumBandwidth, IntelRdtL3Cbm, ScheLatSwitch, MemoryWmarkRatio, MemoryExtra, 
-    MemoryForceEmptyCtl]
+    required: [CPUShares, Memory, CgroupParent, BlkioWeight, CPUPeriod, CPUQuota, CpuRealtimePeriod]
     properties:
       # Applicable to UNIX platforms
       CgroupParent:
